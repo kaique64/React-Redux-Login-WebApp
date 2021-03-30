@@ -6,7 +6,6 @@ import { AiFillInfoCircle } from 'react-icons/ai';
 import { useSelector, useDispatch } from 'react-redux';
 import { StoreState } from '../../store/createStore';
 import { signInRequest } from '../../store/ducks/auth/actions';
-import api from '../../services/api';
 
 interface LoginInputs {
     email: string;
@@ -21,28 +20,32 @@ const Login: React.FC = () => {
     console.log('SIGNED:', isSignedIn);
     console.log('ERROR:', error);
 
-    const [resposta, setResposta] = useState<Boolean>();
     const { register, handleSubmit, errors } = useForm<LoginInputs>();
 
     const onSubmit = handleSubmit(
         async (data) => {
-            const response = await api.post('/auth', data);
-
-            if (response.status === 200) {
-                console.log(response.data);
-                return setResposta(true);
-            }
+            dispatch(signInRequest({
+                email: data.email,
+                senha: data.senha,
+            }))
         }
     )
     
     return (
         <LoginContainer>
             <Titulo> Faça seu Login </Titulo>
-            {resposta &&
+            {isSignedIn &&
                 (
                 <Sucesso> 
                     Logado com sucesso! 
                 </Sucesso>
+                )
+            }
+            {error &&
+                (
+                <Erro> 
+                    Email ou senha incorreto! 
+                </Erro>
                 )
             }
             {errors.email && 
@@ -65,10 +68,7 @@ const Login: React.FC = () => {
                 <FaKey color="#FFF" style={{ marginRight: '1rem'}} />
                 <InputsLogin name="senha" type="password" defaultValue="123456" placeholder="Digite sua senha" ref={register({ required: true })} />
              </Icons>
-            <Botao type="button" onClick={() => dispatch(signInRequest({ 
-                email: 'kaiquehenriqu1e.2005@outlook.com', 
-                senha: '123456' 
-            }))}>
+            <Botao type="button" onClick={onSubmit}>
                 {loadingSignInRequest ? 'Carregando...' : 'Entrar'}
             </Botao>
         </LoginContainer>
